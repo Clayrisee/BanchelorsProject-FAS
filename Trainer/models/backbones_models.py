@@ -1,4 +1,4 @@
-from layers import LayerNorm, Block, Conv2d_cd
+from models.layers import Block_cd, LayerNorm, Block, Conv2d_cd
 import torch
 import torch.nn as nn
 from timm.models.layers import trunc_normal_
@@ -41,7 +41,7 @@ class ConvNeXt(nn.Module):
         cur = 0
         for i in range(4):
             stage = nn.Sequential(
-                *[Block(dim=dims[i], drop_path=dp_rates[cur + j], 
+                *[Block_cd(dim=dims[i], drop_path=dp_rates[cur + j], 
                 layer_scale_init_value=layer_scale_init_value) for j in range(depths[i])]
             )
             self.stages.append(stage)
@@ -86,7 +86,7 @@ class CDCNeXt(nn.Module):
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
-    def __init__(self, in_chans=3, num_classes=1000, 
+    def __init__(self, in_chans=3, num_classes=1, 
                  depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], drop_path_rate=0., 
                  layer_scale_init_value=1e-6, head_init_scale=1.,
                  ):
@@ -101,7 +101,7 @@ class CDCNeXt(nn.Module):
         for i in range(3):
             downsample_layer = nn.Sequential(
                     LayerNorm(dims[i], eps=1e-6, data_format="channels_first"),
-                    Conv2d_cd(dims[i], dims[i+1], kernel_size=2, stride=2),
+                    nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
             )
             self.downsample_layers.append(downsample_layer)
 
@@ -110,12 +110,15 @@ class CDCNeXt(nn.Module):
         cur = 0
         for i in range(4):
             stage = nn.Sequential(
-                *[Block(dim=dims[i], drop_path=dp_rates[cur + j], 
+                *[Block_cd(dim=dims[i], drop_path=dp_rates[cur + j], 
                 layer_scale_init_value=layer_scale_init_value) for j in range(depths[i])]
             )
             self.stages.append(stage)
             cur += depths[i]
-
+        
+        # self.cdcn_stage = nn.Sequential(
+        #     Block_cd(dim=dims[-1], layer_scale_init_value=layer_scale_init_value)
+        # )
         self.norm = nn.LayerNorm(dims[-1], eps=1e-6) # final norm layer
         self.head = nn.Linear(dims[-1], num_classes)
 
@@ -125,16 +128,31 @@ class CDCNeXt(nn.Module):
 
     def _init_weights(self, m):
         if isinstance(m, (Conv2d_cd, nn.Linear)):
+            # print(m.weight)
+            # print(m.bias)
             trunc_normal_(m.weight, std=.02)
             nn.init.constant_(m.bias, 0)
 
     def forward_features(self, x):
         for i in range(4):
             x = self.downsample_layers[i](x)
+            # print(x)
+            # print(x.shape)
             x = self.stages[i](x)
-        return self.norm(x.mean([-2, -1])) # global average pooling, (N, C, H, W) -> (N, C)
+        # outmap = self.cdcn_stage(x)
+        embedding = self.norm(x.mean([-2, -1]))
+        return x, embedding # global average pooling, (N, C, H, W) -> (N, C)
 
     def forward(self, x):
-        x = self.forward_features(x)
-        x = self.head(x)
-        return x
+        outmap, embedding = self.forward_features(x)
+        x = self.head(embedding)
+        return outmap, x
+
+
+# label_encode = {
+#     "principal":4,
+#     "senior":3,
+#     "junior":2,
+#     "associate":1,
+#     "intern":0
+# }
