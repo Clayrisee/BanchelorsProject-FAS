@@ -1,5 +1,5 @@
 import torch
-from backbones_models import *
+from models.backbones_models import *
 
 
 
