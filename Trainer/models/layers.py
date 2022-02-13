@@ -104,11 +104,13 @@ Copyright
 
 class Conv2d_cd(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
-                 padding=1, dilation=1, groups=1, bias=False, theta=0.7):
+                 padding=1, dilation=1, groups=1, bias=True, theta=0.7):
 
         super(Conv2d_cd, self).__init__() 
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, groups=groups, bias=bias)
         self.theta = theta
+        self.weight = self.conv.weight
+        self.bias = self.conv.bias
 
     def forward(self, x):
         out_normal = self.conv(x)
@@ -118,11 +120,19 @@ class Conv2d_cd(nn.Module):
         else:
             #pdb.set_trace()
             [C_out,C_in, kernel_size,kernel_size] = self.conv.weight.shape
+            # print(self.conv.weight.shape)
+            # print(self.conv.weight.sum(2))
+            # print(self.conv.weight.sum(2).shape)
             kernel_diff = self.conv.weight.sum(2).sum(2)
+            # print(kernel_diff)
+            # print(kernel_diff.shape)
             kernel_diff = kernel_diff[:, :, None, None]
             out_diff = F.conv2d(input=x, weight=kernel_diff, bias=self.conv.bias, stride=self.conv.stride, padding=0, groups=self.conv.groups)
-
-            return out_normal - self.theta * out_diff
+            # print(out_diff.shape)
+            # print(out_normal.shape)
+            result = out_normal - self.theta * out_diff
+            # print(result.shape)
+            return result
 
 
 
@@ -144,3 +154,39 @@ class SpatialAttention(nn.Module):
 
 
 
+class Block_cd(nn.Module):
+    r""" CDNeXt Block. There are two equivalent implementations:
+    (1) DwConv_cd -> LayerNorm (channels_first) -> 1x1 Conv -> GELU -> 1x1 Conv; all in (N, C, H, W)
+    (2) DwConv_cd -> Permute to (N, H, W, C); LayerNorm (channels_last) -> Linear -> GELU -> Linear; Permute back
+    We use (2) as we find it slightly faster in PyTorch
+    
+    Args:
+        dim (int): Number of input channels.
+        drop_path (float): Stochastic depth rate. Default: 0.0
+        layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
+    """
+    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
+        super().__init__()
+        self.dwconv = Conv2d_cd(dim, dim, kernel_size=7, padding=3, groups=dim) # depthwise conv_cd :D
+        self.norm = LayerNorm(dim, eps=1e-6)
+        self.pwconv1 = nn.Linear(dim, 4 * dim) # pointwise/1x1 convs, implemented with linear layers
+        self.act = nn.GELU()
+        self.pwconv2 = nn.Linear(4 * dim, dim)
+        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)), 
+                                    requires_grad=True) if layer_scale_init_value > 0 else None
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+
+    def forward(self, x):
+        input = x
+        x = self.dwconv(x)
+        x = x.permute(0, 2, 3, 1) # (N, C, H, W) -> (N, H, W, C)
+        x = self.norm(x)
+        x = self.pwconv1(x)
+        x = self.act(x)
+        x = self.pwconv2(x)
+        if self.gamma is not None:
+            x = self.gamma * x
+        x = x.permute(0, 3, 1, 2) # (N, H, W, C) -> (N, C, H, W)
+
+        x = input + self.drop_path(x)
+        return x
