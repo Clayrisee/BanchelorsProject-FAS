@@ -1,0 +1,3 @@
+"""
+For init data package
+"""
