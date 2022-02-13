@@ -147,12 +147,3 @@ class CDCNeXt(nn.Module):
         outmap, embedding = self.forward_features(x)
         x = self.head(embedding)
         return outmap, x
-
-
-# label_encode = {
-#     "principal":4,
-#     "senior":3,
-#     "junior":2,
-#     "associate":1,
-#     "intern":0
-# }

@@ -49,21 +49,3 @@ def get_cdcnext(model_type="base", **kwargs):
     }
 
     return models[model_type]
-
-# def cdcnext_tiny(**kwargs):
-#     model = CDCNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], **kwargs)
-#     return model
-
-
-# def cdcnext_small(**kwargs):
-#     model = CDCNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], **kwargs)
-#     return model
-
-
-# def cdcnext_base(**kwargs):
-#     model = CDCNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
-#     return model
-
-# def cdcnext_large(**kwargs):
-#     model = CDCNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
-#     return model
