@@ -15,6 +15,25 @@ def read_cfg(cfg_file):
         cfg = yaml.safe_load(rf)
         return cfg
 
+@torch.no_grad()
+def scoring_method(pred_mask, pred_score, scoring_method="combine"):
+    scoring_method_list = ["combine", "label", "avg_mask"]
+    final_score = 0
+    
+    if scoring_method not in scoring_method_list:
+        raise NotImplementedError
+    
+    if scoring_method == "combine":
+        final_score = (torch.mean(pred_mask, axis=(1, 2)) + pred_score) / 2
+
+    elif scoring_method == "label":
+        final_score = pred_score
+
+    else:
+        final_score = torch.mean(pred_mask, axis=(1, 2))
+
+    return final_score
+
 def export_model_to_onnx(model, dataset, output_path):
     example_input = next(iter(dataset.train_dataloader()))[0]
     example_input = example_input[:1]
@@ -95,7 +114,7 @@ def build_network(cfg):
 
     elif cfg['model']['base'] == 'cdcnext_base':
         network = CDCNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
-        
+
     elif cfg['model']['base'] == 'cdcnext_large':
         network = CDCNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
 
