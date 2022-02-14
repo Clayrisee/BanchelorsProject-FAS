@@ -2,7 +2,7 @@ from models.layers import Block_cd, LayerNorm, Block, Conv2d_cd
 import torch
 import torch.nn as nn
 from timm.models.layers import trunc_normal_
-
+# import torch.nn.functional as F
 
 class ConvNeXt(nn.Module):
     r""" ConvNeXt
@@ -120,6 +120,7 @@ class CDCNeXt(nn.Module):
         #     Block_cd(dim=dims[-1], layer_scale_init_value=layer_scale_init_value)
         # )
         self.norm = nn.LayerNorm(dims[-1], eps=1e-6) # final norm layer
+        self.dec = Conv2d_cd
         self.head = nn.Linear(dims[-1], num_classes)
 
         self.apply(self._init_weights)
@@ -140,10 +141,15 @@ class CDCNeXt(nn.Module):
             # print(x.shape)
             x = self.stages[i](x)
         # outmap = self.cdcn_stage(x)
-        embedding = self.norm(x.mean([-2, -1]))
-        return x, embedding # global average pooling, (N, C, H, W) -> (N, C)
+        embedding = self.norm(x.mean([-2, -1]))  # global average pooling, (N, C, H, W) -> (N, C)
+        return x, embedding
 
     def forward(self, x):
         outmap, embedding = self.forward_features(x)
+        # print(outmap.shape[1])
+        in_c, out_c = (outmap.shape[1], 1)
+        self.dec = self.dec(in_c, out_c)
+        outmap = self.dec(outmap)
         x = self.head(embedding)
-        return outmap, x
+        return outmap, torch.flatten(x)
+    
