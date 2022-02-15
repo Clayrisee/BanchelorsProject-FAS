@@ -11,12 +11,16 @@ class FASTrainer(BaseTrainer):
         self.network = network
         self.optimizer = optimizer
         self.criterion = criterion
-        self.dataset = dataset
         self.lr_scheduler = lr_scheduler
         self.device = device
         self.logger = logger
         self.eval_metrics = calculate_liveness_metric
-    
+        self.init_dataloader(dataset=dataset)
+
+    def init_dataloader(self, dataset):
+        self.trainloader = dataset.train_dataloader()
+        self.valloader = dataset.val_dataloader()
+
     def load_model(self):
         saved_name = os.path.join(self.cfg['output_dir'], '{}_{}.pth'.format(self.cfg['model']['base'], self.cfg['dataset']['name']))
         state = torch.load(saved_name)
