@@ -29,6 +29,7 @@ class ResNet(nn.Module):
             res_layers.append(res_layer)
         
         self.res_blocks = nn.Sequential(*res_layers)
+        self.lastconv = base_conv(2048, 1)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * 4, num_classes)
     
@@ -38,10 +39,11 @@ class ResNet(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
         x = self.res_blocks(x)
+        outmap = self.lastconv(x)
         x = self.avg_pool(x)
         x = x.reshape(x.shape[0], -1) # flatten
         x = self.fc(x)
-        return x
+        return outmap, x
         
     def _make_layer(self, block, base_conv, num_residual_blocks, intermediate_channels, stride):
         identity_downsample= None
