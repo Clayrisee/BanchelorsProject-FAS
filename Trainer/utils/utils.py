@@ -100,24 +100,48 @@ def build_network(cfg):
     }
     if cfg['model']['base'] == 'convnext_tiny':
         network = convnext_tiny(pretrained **kwargs)
+        
     elif cfg['model']['base'] == 'convnext_small':
         network = convnext_tiny(pretrained **kwargs)
+
     elif cfg['model']['base'] == 'convnext_base':
         network = convnext_tiny(pretrained **kwargs)
+
     elif cfg['model']['base'] == 'convnext_large':
         network = convnext_tiny(pretrained **kwargs)
-    elif cfg['model']['base'] == 'cdcnext_tiny':
-        network = CDCNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], **kwargs)
 
-    elif cfg['model']['base'] == 'cdcnext_small':
-        network = CDCNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], **kwargs)
+    elif cfg['model']['base'] == 'cd_convnext_tiny':
+        network = cd_convnext_tiny(**kwargs)
 
-    elif cfg['model']['base'] == 'cdcnext_base':
-        network = CDCNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
+    elif cfg['model']['base'] == 'cd_convnext_small':
+        network = cd_convnext_small(**kwargs)
 
-    elif cfg['model']['base'] == 'cdcnext_large':
-        network = CDCNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
+    elif cfg['model']['base'] == 'cd_convnext_base':
+        network = cd_convnext_base(**kwargs)
 
+    elif cfg['model']['base'] == 'cd_convnext_large':
+        network = cd_convnext_large(**kwargs)
+    
+    elif cfg['model']['base'] == 'resnet50':
+        network = resnet_50(img_ch=3, **kwargs)
+
+    elif cfg['model']['base'] == 'resnet101':
+        network = resnet_101(img_ch=3, **kwargs)
+
+    elif cfg['model']['base'] == 'resnet152':
+        network = resnet_152(img_ch=3, **kwargs)
+
+    elif cfg['model']['base'] == 'cd_resnet50':
+        network = cd_resnet_50(img_ch=3, **kwargs)
+
+    elif cfg['model']['base'] == 'cd_resnet101':
+        network = cd_resnet_101(img_ch=3, **kwargs)
+
+    elif cfg['model']['base'] == 'cd_resnet152':
+        network = cd_resnet_152(img_ch=3, **kwargs)
+    
+    elif cfg['model']['base'] == 'cdcn':
+        network = cdcn()
     else:
         raise NotImplementedError
 
