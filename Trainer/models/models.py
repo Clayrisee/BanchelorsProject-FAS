@@ -1,6 +1,7 @@
 import torch
-from models.backbones_models import *
-
+from models.convnext import ConvNeXt
+from models.resnet import ResNet
+from models.cdcn import CDCN
 
 
 model_urls = {
@@ -13,8 +14,9 @@ model_urls = {
     "convnext_xlarge_22k": "https://dl.fbaipublicfiles.com/convnext/convnext_xlarge_22k_224.pth",
 }
 
+# Function to Generate ConvNext with Vanilla Convolution
 def convnext_tiny(pretrained=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], conv_type="conv2d",**kwargs)
     if pretrained:
         url = model_urls['convnext_tiny_1k']
         checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu", check_hash=True)
@@ -23,15 +25,15 @@ def convnext_tiny(pretrained=False, **kwargs):
 
 
 def convnext_small(pretrained=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], conv_type="conv2d",**kwargs)
     if pretrained:
         url = model_urls['convnext_small_1k']
-        checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu")
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,map_location="cpu")
         model.load_state_dict(checkpoint["model"])
     return model
 
 def convnext_base(pretrained=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], conv_type="conv2d", **kwargs)
     if pretrained:
         url = model_urls['convnext_base_1k']
         checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu")
@@ -39,21 +41,73 @@ def convnext_base(pretrained=False, **kwargs):
     return model
 
 def convnext_large(pretrained=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], conv_type="conv2d", **kwargs)
     if pretrained:
         url = model_urls['convnext_large_1k']
         checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu")
         model.load_state_dict(checkpoint["model"])
     return model
 
-# Function to generate CDCNeXt
+# Function to Generate ConvNext with Central Difference Convolution
 
-def get_cdcnext(model_type="base", **kwargs):
-    models = {
-        "tiny": CDCNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], **kwargs),
-        "small":CDCNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], **kwargs),
-        "base": CDCNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs),
-        "large": CDCNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
-    }
+def cd_convnext_tiny(**kwargs):
+    model = ConvNeXt(depths=[3, 3, 9, 3], 
+            dims=[96, 192, 384, 768], 
+            conv_type="cdc",
+            **kwargs)
+    return model
 
-    return models[model_type]
+
+def cd_convnext_small(**kwargs):
+    model = ConvNeXt(depths=[3, 3, 27, 3], 
+            dims=[96, 192, 384, 768], 
+            conv_type="cdc", 
+            **kwargs)
+    return model
+
+def cd_convnext_base(**kwargs):
+    model = ConvNeXt(depths=[3, 3, 27, 3], 
+            dims=[128, 256, 512, 1024], 
+            conv_type="cdc", 
+            **kwargs)
+    return model
+
+def cd_convnext_large(**kwargs):
+    model = ConvNeXt(depths=[3, 3, 27, 3], 
+            dims=[192, 384, 768, 1536], 
+            conv_type="cdc", 
+            **kwargs)
+    return model
+
+
+# Function to Generate ResNet models using Vanilla Convolution
+
+def resnet_50(img_ch=3, **kwargs):
+    model = ResNet([3, 4, 6, 3], img_ch, **kwargs)
+    return model
+
+def resnet_101(img_ch=3, **kwargs):
+    model = ResNet([3, 4, 23, 3], img_ch, **kwargs)
+    return model
+
+def resnet_152(img_ch=3, **kwargs):
+    model = ResNet([3, 8, 36, 3], img_ch, **kwargs)
+    return model
+
+# Function to Generate ResNet model using Central Difference Convolution
+
+def cd_resnet_50(img_ch=3, **kwargs):
+    model = ResNet([3, 4, 6, 3], img_ch,conv_type="cdc" **kwargs)
+    return model
+
+def cd_resnet_101(img_ch=3, **kwargs):
+    model = ResNet([3, 4, 23, 3], img_ch,conv_type="cdc" **kwargs)
+    return model
+
+def cd_resnet_152(img_ch=3, **kwargs):
+    model = ResNet([3, 8, 36, 3], img_ch,conv_type="cdc" **kwargs)
+    return model
+
+# Function to generate CDCN
+def cdcn():
+    return CDCN()
