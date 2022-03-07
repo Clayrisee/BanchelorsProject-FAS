@@ -4,21 +4,18 @@ from models.layers.cdcn_layers import Conv2d_cd
 
 class ResBlock(nn.Module):
     def __init__(self,
-    in_channels, intermediate_channels, base_conv="conv2d", identity_downsample=None, stride=1
+    in_channels, intermediate_channels, base_conv=nn.Conv2d, identity_downsample=None, stride=1
     ):
         super(ResBlock, self).__init__()
-        list_conv = ["conv2d", "cdc"]
-        if base_conv not in list_conv:
-            raise ValueError(f"{base_conv} not in {list_conv}, please choose between two of them")
-        
-        conv = Conv2d_cd if base_conv == "cdc" else nn.Conv2d
+
+    
         self.expansion = 4
-        self.conv1 = conv(in_channels, intermediate_channels, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv1 = base_conv(in_channels, intermediate_channels, kernel_size=1, stride=1, padding=0, bias=False)
         self.bn1 = nn.BatchNorm2d(intermediate_channels)
-        self.conv2 = conv(intermediate_channels, intermediate_channels, kernel_size=3, stride=stride,
+        self.conv2 = base_conv(intermediate_channels, intermediate_channels, kernel_size=3, stride=stride,
         padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(intermediate_channels)
-        self.conv3 = conv(
+        self.conv3 = base_conv(
                     intermediate_channels,
                     intermediate_channels * self.expansion,
                     kernel_size=1,
