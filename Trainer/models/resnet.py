@@ -43,7 +43,9 @@ class ResNet(nn.Module):
         x = self.avg_pool(x)
         x = x.reshape(x.shape[0], -1) # flatten
         x = self.fc(x)
-        return outmap, x
+        outmap = nn.Sigmoid(outmap) # convert into 0-1
+        out_score = nn.Sigmoid(x)
+        return outmap, out_score
         
     def _make_layer(self, block, base_conv, num_residual_blocks, intermediate_channels, stride):
         identity_downsample= None

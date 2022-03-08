@@ -67,6 +67,8 @@ class CDCN(nn.Module):
             basic_conv(64, 1, kernel_size=3, stride=1, padding=1, bias=False, theta= theta),
             nn.ReLU(),    
         )
+
+        self.fc = nn.Linear(128*3, 1)
         
         self.downsample32x32 = nn.Upsample(size=(32, 32), mode='bilinear')
 
@@ -89,6 +91,8 @@ class CDCN(nn.Module):
         x = self.lastconv2(x) #  x[64, 32, 32]
         x = self.lastconv3(x) # x [1, 32, 32] result map
 
-        map_x = x.squeeze(1) 
-        score = torch.mean(map_x, axis=(1,2))
+        map_x = x.squeeze(1)
+        out_label = self.fc(x_concat)
+        # score = torch.mean(map_x, axis=(1,2))
+        score = nn.Sigmoid(out_label)
         return map_x, score

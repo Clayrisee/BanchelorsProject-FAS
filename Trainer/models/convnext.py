@@ -78,4 +78,5 @@ class ConvNeXt(nn.Module):
         outmap = self.dec(outmap) # return outmap for pixelwise supervision
         x = self.head(embedding) # MLP for classifier
         x = torch.flatten(x) # return final label
+        outmap, x = nn.Sigmoid(outmap), nn.Sigmoid(x)
         return outmap, x
