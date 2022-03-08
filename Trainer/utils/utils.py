@@ -17,6 +17,14 @@ def read_cfg(cfg_file):
 
 @torch.no_grad()
 def scoring_method(pred_mask, pred_score, scoring_method="combine"):
+    """ Function to choose scoring method of the model
+    Args:
+        pred_mask (torch.Tensor): Predicted mask from the model.
+        pred_score (float): Predicted score from the model
+        scoring_method (str): Scoring method for prediction [combine/label/avg_mask]. 
+    Returns:
+        (float): score of prediction.
+    """
     scoring_method_list = ["combine", "label", "avg_mask"]
     final_score = 0
     
@@ -34,8 +42,14 @@ def scoring_method(pred_mask, pred_score, scoring_method="combine"):
 
     return final_score
 
-def export_model_to_onnx(model, dataset, output_path):
-    example_input = next(iter(dataset.train_dataloader()))[0]
+def export_model_to_onnx(model, dataloader, output_path):
+    """ Export model to onnx model
+    Args:
+        model (nn.Module): Trained model in nn.Module format.
+        dataloader (DataLoader): Dataloader of example inputs.
+        output_path (str): Path to save onnx model result.
+    """
+    example_input = next(iter(dataloader.train_dataloader()))[0]
     example_input = example_input[:1]
     print(example_input.shape)
     print(type(example_input))
