@@ -15,6 +15,7 @@ class FASTrainer(BaseTrainer):
         self.device = device
         self.logger = logger
         self.eval_metrics = calculate_liveness_metric
+        self.dataset = dataset
         self.init_dataloader(dataset=dataset)
 
     def init_dataloader(self, dataset):
@@ -43,8 +44,6 @@ class FASTrainer(BaseTrainer):
     
     def train_one_epoch(self, epoch):
         self.network.train()
-        self.train_loss_metric.reset(epoch)
-        self.train_acc_metric.reset(epoch)
         loss = 0
         for i, (imgs, masks, labels) in enumerate(self.trainloader):
             imgs, masks, labels = imgs.to(self.device), masks.to(self.device), labels.to(self.device)
