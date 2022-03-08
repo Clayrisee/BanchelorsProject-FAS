@@ -4,9 +4,10 @@ from torch import nn
 
 class PixWiseBCELoss(nn.Module):
     def __init__(self,
-    weight:torch.Tensor=torch.Tensor(1, dtype=torch.float32),
+    weight=None,
     beta=0.5):
         super().__init__()
+        weight = torch.Tensor(1)
         self.criterion = nn.BCELoss(weight=weight) # for counter imbalanced dataset (idk it will be great or not)
         self.beta = beta
 
