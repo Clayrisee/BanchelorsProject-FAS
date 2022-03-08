@@ -27,7 +27,7 @@ class LivenessDataModule(DataModuleBase):
         self.test_val_transforms = transforms.Compose([
             transforms.Resize(cfg['model']['input_size']),
             transforms.ToTensor(),
-            transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['sigma'])
+            transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['std'])
         ])
 
         self.prepare_dataset(cfg=cfg)
@@ -37,7 +37,7 @@ class LivenessDataModule(DataModuleBase):
         self.train_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['train_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.train_transforms,
             smoothing=cfg['train']['smoothing']
             )
@@ -45,15 +45,15 @@ class LivenessDataModule(DataModuleBase):
         self.val_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['val_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
             smoothing=cfg['val']['smoothing']
             )
-
+   
         self.test_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['test_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
             smoothing=cfg['test']['smoothing']
             )
