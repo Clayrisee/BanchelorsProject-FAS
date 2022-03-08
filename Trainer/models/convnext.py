@@ -2,6 +2,7 @@ from models.layers.convnext_layers import LayerNorm, Block
 from models.layers.cdcn_layers import Conv2d_cd
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from timm.models.layers import trunc_normal_
 
 
@@ -73,10 +74,12 @@ class ConvNeXt(nn.Module):
 
     def forward(self, x):
         outmap, embedding = self.forward_features(x) # forward feature to feature extraction
+        # TODO: Fix this line. Kayaknya salah define layer. coba dibenerin dlu dah
         in_c, out_c = (outmap.shape[1], 1) # get input ch and output ch for decryptor
         self.dec = self.dec(in_c, out_c) # define decryptor layer
         outmap = self.dec(outmap) # return outmap for pixelwise supervision
         x = self.head(embedding) # MLP for classifier
         x = torch.flatten(x) # return final label
-        outmap, x = nn.Sigmoid(outmap), nn.Sigmoid(x)
+        x = x.unsqueeze(1)
+        outmap, x = F.sigmoid(outmap), F.sigmoid(x)
         return outmap, x
