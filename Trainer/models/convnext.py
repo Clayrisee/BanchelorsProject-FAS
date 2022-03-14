@@ -55,7 +55,7 @@ class ConvNeXt(nn.Module):
 
         self.norm = nn.LayerNorm(dims[-1], eps=1e-6) # final norm layer
         self.head = nn.Linear(dims[-1], num_classes)
-        self.dec = self.base_conv
+        self.dec = nn.Conv2d(dims[-1], 1, kernel_size=1, stride=1) # define dec based on last dim
         self.apply(self._init_weights)
         self.head.weight.data.mul_(head_init_scale)
         self.head.bias.data.mul_(head_init_scale)
@@ -74,12 +74,16 @@ class ConvNeXt(nn.Module):
 
     def forward(self, x):
         outmap, embedding = self.forward_features(x) # forward feature to feature extraction
-        # TODO: Fix this line. Kayaknya salah define layer. coba dibenerin dlu dah
-        in_c, out_c = (outmap.shape[1], 1) # get input ch and output ch for decryptor
-        self.dec = self.dec(in_c, out_c) # define decryptor layer
+        # # TODO: Fix this line. Kayaknya salah define layer. coba dibenerin dlu dah
+        # print(outmap.shape)
+        # in_c, out_c = (outmap.shape[1], 1) # get input ch and output ch for decryptor
+        
+        # self.dec = self.dec(in_c, out_c) # define decryptor layer
         outmap = self.dec(outmap) # return outmap for pixelwise supervision
         x = self.head(embedding) # MLP for classifier
         x = torch.flatten(x) # return final label
         x = x.unsqueeze(1)
         outmap, x = F.sigmoid(outmap), F.sigmoid(x)
+        # print('outmap',outmap)
+        # print('x',x)
         return outmap, x
