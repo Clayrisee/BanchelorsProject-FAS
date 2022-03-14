@@ -7,14 +7,15 @@ from models.layers.cdcn_layers import Conv2d_cd
 class ResNet(nn.Module):
 
     def __init__(self, layers, im_ch, num_classes, conv_type="conv2d"):
+        super().__init__()
         self.in_channels = 64
         list_conv = ["conv2d", "cdc"]
         if conv_type not in list_conv:
             raise ValueError(f"{conv_type} not in {list_conv}, please choose between two of them")
         base_conv = Conv2d_cd if conv_type == "cdc" else nn.Conv2d
-        self.conv1 = base_conv(im_ch, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(im_ch, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.relu= nn.ReLU
+        self.relu= nn.ReLU()
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # Ini intinya mah layer resnet ada di bawah ini
@@ -24,12 +25,12 @@ class ResNet(nn.Module):
             stride = 1 if i == 0 else 2
             base_ch = 64
             res_layer = self._make_layer(
-                ResBlock, layer, intermediate_channels= base_ch * (i+1), stride=stride
+                ResBlock, base_conv, layer, intermediate_channels= base_ch * (i+1), stride=stride
             )
             res_layers.append(res_layer)
         
         self.res_blocks = nn.Sequential(*res_layers)
-        self.lastconv = base_conv(2048, 1)
+        self.lastconv = nn.Conv2d(2048, 1, kernel_size=1, stride=1)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * 4, num_classes)
     
