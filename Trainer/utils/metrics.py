@@ -11,8 +11,11 @@ def ACER(apcer, npcer):
     return (apcer + npcer) / 2
 
 def calculate_liveness_metric(y_probs, y_true, threshold=0.5):
+
     result_metrics=dict()
-    # y_probs = 1 - y_probs
+    y_probs = y_probs.cpu().numpy()
+    y_true = y_true.cpu().numpy()
+
     y_pred = np.array(np.greater(y_probs, threshold), dtype=np.float32)
     tp = np.sum(np.logical_and(y_pred, y_true))
     fp = np.sum(np.logical_and(y_pred, np.logical_not(y_true)))
