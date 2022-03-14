@@ -97,15 +97,15 @@ def resnet_152(img_ch=3, **kwargs):
 # Function to Generate ResNet model using Central Difference Convolution
 
 def cd_resnet_50(img_ch=3, **kwargs):
-    model = ResNet([3, 4, 6, 3], img_ch,conv_type="cdc" **kwargs)
+    model = ResNet([3, 4, 6, 3], img_ch,conv_type="cdc", **kwargs)
     return model
 
 def cd_resnet_101(img_ch=3, **kwargs):
-    model = ResNet([3, 4, 23, 3], img_ch,conv_type="cdc" **kwargs)
+    model = ResNet([3, 4, 23, 3], img_ch,conv_type="cdc", **kwargs)
     return model
 
 def cd_resnet_152(img_ch=3, **kwargs):
-    model = ResNet([3, 8, 36, 3], img_ch,conv_type="cdc" **kwargs)
+    model = ResNet([3, 8, 36, 3], img_ch,conv_type="cdc", **kwargs)
     return model
 
 # Function to generate CDCN
