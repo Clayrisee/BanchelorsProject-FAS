@@ -16,8 +16,8 @@ class LivenessDataModule(DataModuleBase):
         self.map_size = cfg['model']['map_size']
 
         self.train_transforms = transforms.Compose([
-            RandomGammaCorrection(max_gamma=cfg['dataset']['augmentation']['gamma_correction'][1],
-                            min_gamma=cfg['dataset']['augmentation']['gamma_correction'][0]),
+            # RandomGammaCorrection(max_gamma=cfg['dataset']['augmentation']['gamma_correction'][1],
+            #                 min_gamma=cfg['dataset']['augmentation']['gamma_correction'][0]),
             transforms.RandomHorizontalFlip() if cfg['dataset']['augmentation']['horizontal_flip'] else None,
             transforms.Resize(cfg['model']['input_size']),
             transforms.ToTensor(),
