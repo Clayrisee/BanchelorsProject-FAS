@@ -32,13 +32,22 @@ def scoring_method(pred_mask, pred_score, scoring_method="combine"):
         raise NotImplementedError
     
     if scoring_method == "combine":
-        final_score = (torch.mean(pred_mask, axis=(1, 2)) + pred_score) / 2
+        # print(torch.mean((torch.mean(pred_mask, axis=(1, 2)),)))
+        # print(pred_score)
+        mean_mask = torch.mean(pred_mask, axis=(1, 2))
+        final_mean_mask = torch.mean(mean_mask, axis=1)
+        pred_score = pred_score.squeeze(1)
+        # print(final_mean_mask)
+        # print(pred_score)
+        final_score = (final_mean_mask + pred_score) / 2
+        # print(final_score)
 
     elif scoring_method == "label":
         final_score = pred_score
 
     else:
-        final_score = torch.mean(pred_mask, axis=(1, 2))
+        mean_mask = torch.mean(pred_mask, axis=(1, 2))  
+        final_score = torch.mean(mean_mask, axis=1)
 
     return final_score
 
@@ -90,11 +99,11 @@ def get_device(cfg):
         torch.device
     """
     device = None
-    if cfg['device'] == '':
+    if cfg['device'] == 'cpu':
         device = torch.device("cpu")
-    elif cfg['device'] == '0':
+    elif cfg['device'] == 'cuda:0':
         device = torch.device("cuda:0")
-    elif cfg['device'] == '1':
+    elif cfg['device'] == 'cuda:1':
         device = torch.device("cuda:1")
     else:
         raise NotImplementedError
