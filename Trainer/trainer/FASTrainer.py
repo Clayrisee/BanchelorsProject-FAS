@@ -54,10 +54,10 @@ class FASTrainer(BaseTrainer):
             self.optimizer.step()
             loss += loss.item() * imgs.shape[0]
             # TODO: add logger to record loss for each step.
-
+            # print("Batch train loss", loss)
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
-        
+        # print(len(self.dataset.train_set))
         epoch_loss = loss / len(self.dataset.train_set)
         if self.logger is not None:
             self.logger.log_metric("train_loss", epoch_loss, epoch=epoch)
@@ -79,17 +79,23 @@ class FASTrainer(BaseTrainer):
         self.network.eval()
         with torch.no_grad():
             for i, (imgs, masks, labels) in enumerate(self.valloader):
-            # # TODO: add scoring method
                 imgs, masks, labels = imgs.to(self.device), masks.to(self.device), labels.to(self.device)
                 pred_mask, preds = self.network(imgs)
                 loss = self.criterion(pred_mask, preds, masks, labels)
+                # print("Batch val loss", loss)
                 pred_scores = scoring_method(pred_mask, preds)
                 liveness_metrics = self.eval_metrics(pred_scores, labels)
                 val_loss += loss.item() * imgs.shape[0]
+                # print(liveness_metrics)
                 apcer += liveness_metrics['apcer']
                 npcer += liveness_metrics['npcer']
                 acer += liveness_metrics['acer']
                 # TODO: add logger to record result metric for each step.
+            # print(len(self.dataset.val_set))
+            # print(val_loss)
+            # print(apcer)
+            # print(npcer)
+            # print(acer)
             epoch_val_loss = loss / len(self.dataset.val_set)
             epoch_apcer = apcer / len(self.dataset.val_set)
             epoch_npcer = npcer / len(self.dataset.val_set)
