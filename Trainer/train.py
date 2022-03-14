@@ -5,26 +5,56 @@ from utils.utils import read_cfg, get_optimizer, get_device, build_network
 from trainer.FASTrainer import FASTrainer
 from utils.loss import PixFocalLoss, PixWiseBCELoss
 from utils.schedulers import CosineAnealingWithWarmUp
+from utils.logger import get_logger
+from utils.callbacks import CustomCallback
+import argparse
 
-cfg = read_cfg(cfg_file="config/base_config.yaml")
-logger = Experiment(api_key=cfg['logger']['api_key'], 
-        project_name=cfg['logger']['project_name'],
-        workspace=cfg['logger']['workspace'])
-device = get_device(cfg)
-network = build_network(cfg)
-optimizer = get_optimizer(cfg, network)
-lr_scheduler = CosineAnealingWithWarmUp(optimizer, 
-    first_cycle_steps=300, 
-    cycle_mult=1.0,
-    max_lr=0.1, 
-    min_lr=0.001, 
-    warmup_steps=50, 
-    gamma=0.5)
 
-criterion = PixFocalLoss()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Argument for train the model")
+    parser.add_argument('-cfg', '--config', type=str, help="Path to config yaml file")
+    args = parser.parse_args()
+    cfg = read_cfg(cfg_file=args.config)
+    LOG = get_logger(cfg['model']['base']) # create logger based on model name for Track each proses in console
 
-dataset = LivenessDataModule(cfg)
+    LOG.info("Training Process Start")
+    logger = Experiment(api_key=cfg['logger']['api_key'], 
+            project_name=cfg['logger']['project_name'],
+            workspace=cfg['logger']['workspace']) # logger for track model in Comet ML
+    LOG.info("Comet Logger has successfully loaded.")
 
-trainer = FASTrainer(cfg, network, optimizer, criterion, dataset, device, lr_scheduler, logger=logger)
+    device = get_device(cfg)
+    LOG.info(f"{str(device)} has choosen.")
 
-trainer.train()
+    network = build_network(cfg)
+    print(network)
+    LOG.info(f"Network {cfg['model']['base']} succesfully loaded.")
+
+    optimizer = get_optimizer(cfg, network)
+    LOG.info(f"Optimizer has been defined.")
+
+    lr_scheduler = CosineAnealingWithWarmUp(optimizer, 
+        first_cycle_steps=300, 
+        cycle_mult=1.0,
+        max_lr=0.1, 
+        min_lr=0.001, 
+        warmup_steps=50, 
+        gamma=0.5)
+    LOG.info(f"Scheduler has been defined.")
+
+    criterion = PixWiseBCELoss()
+    LOG.info(f"Criterion has been defined")
+
+    dataset = LivenessDataModule(cfg)
+    LOG.info(f"Dataset successfully loaded.")
+    cb_config = dict(
+        checkpoint_path=cfg['output_dir'],
+        patience=cfg['custom_cb']['patience'],
+        metric=cfg['custom_cb']['metric'],
+        mode=cfg['custom_cb']['mode']
+    )
+    custom_cb = CustomCallback(**cb_config)
+    LOG.info(f"Custom CB Initialized")
+    trainer = FASTrainer(cfg, network, optimizer, criterion, dataset, device, callbacks=custom_cb, lr_scheduler=lr_scheduler, logger=logger)
+
+    trainer.train()

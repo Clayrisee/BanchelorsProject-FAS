@@ -4,15 +4,22 @@ from torch import nn
 
 class PixWiseBCELoss(nn.Module):
     def __init__(self,
-    weight:torch.Tensor=torch.Tensor(1, dtype=torch.float32),
+    # weight=None,
     beta=0.5):
         super().__init__()
-        self.criterion = nn.BCELoss(weight=weight) # for counter imbalanced dataset (idk it will be great or not)
+        # weight = torch.Tensor(1)
+        self.criterion = nn.BCELoss() # for counter imbalanced dataset (idk it will be great or not)
         self.beta = beta
 
     def forward(self, net_mask, net_label, target_mask, target_label):
+        # print(net_mask)
+        # print(net_label)
+        # print(target_mask)
+        # print(target_label)
         pixel_loss = self.criterion(net_mask, target_mask)
         binary_loss = self.criterion(net_label, target_label)
+        # print("Pixel Loss", pixel_loss)
+        # print("Binary Loss", binary_loss)
         loss = pixel_loss * self.beta + binary_loss * (1 - self.beta)
         return loss
 

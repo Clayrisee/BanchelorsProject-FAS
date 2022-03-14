@@ -16,8 +16,8 @@ class LivenessDataModule(DataModuleBase):
         self.map_size = cfg['model']['map_size']
 
         self.train_transforms = transforms.Compose([
-            RandomGammaCorrection(max_gamma=cfg['dataset']['augmentation']['gamma_correction'][1],
-                            min_gamma=cfg['dataset']['augmentation']['gamma_correction'][0]),
+            # RandomGammaCorrection(max_gamma=cfg['dataset']['augmentation']['gamma_correction'][1],
+            #                 min_gamma=cfg['dataset']['augmentation']['gamma_correction'][0]),
             transforms.RandomHorizontalFlip() if cfg['dataset']['augmentation']['horizontal_flip'] else None,
             transforms.Resize(cfg['model']['input_size']),
             transforms.ToTensor(),
@@ -27,7 +27,7 @@ class LivenessDataModule(DataModuleBase):
         self.test_val_transforms = transforms.Compose([
             transforms.Resize(cfg['model']['input_size']),
             transforms.ToTensor(),
-            transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['sigma'])
+            transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['std'])
         ])
 
         self.prepare_dataset(cfg=cfg)
@@ -37,7 +37,7 @@ class LivenessDataModule(DataModuleBase):
         self.train_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['train_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.train_transforms,
             smoothing=cfg['train']['smoothing']
             )
@@ -45,15 +45,15 @@ class LivenessDataModule(DataModuleBase):
         self.val_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['val_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
             smoothing=cfg['val']['smoothing']
             )
-
+   
         self.test_set = FASDataset(
             root_dir=cfg['dataset']['root'],
             csv_file=cfg['dataset']['test_set'],
-            depth_map_size=cfg['model']['depth_map_size'],
+            map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
             smoothing=cfg['test']['smoothing']
             )
