@@ -1,27 +1,28 @@
 output_dir: 'model_checkpoint/'
-device: '0'
+device: 'cpu'
 dataset:
-  root: 'dataset/'
+  root: 'unit_test_dataset/'
   name: 'nuaa_lcc'
   augmentation:
     horizontal_flip: True
     rotation_range: 10
-    gamma_correction: [1.0/2.2, 2.2/1.0]
+    # gamma_correction: [1.0/2.2, 2.2/1.0]
     brightness: 0.5
     contrast: 0.5
     saturation: 0.5
     hue: 0.5
-  train_set: 'train.csv'
-  val_set: 'val.csv'
-  test_set: 'test.csv'
+  train_set: 'test_label.csv'
+  val_set: 'test_label.csv'
+  test_set: 'test_label.csv'
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
   
 model:
-  base: 'cdcnext_tiny'
+  base: 'cd_convnext_tiny'
   pretrained: false
   input_size: [256,256]
-  depth_map_size: [7,7]
+  num_classes: 1
+  map_size: 8
 
 train:
   batch_size: 64
