@@ -26,6 +26,7 @@ if __name__ == "__main__":
     LOG.info(f"{str(device)} has choosen.")
 
     network = build_network(cfg)
+    print(network)
     LOG.info(f"Network {cfg['model']['base']} succesfully loaded.")
 
     optimizer = get_optimizer(cfg, network)
@@ -40,7 +41,7 @@ if __name__ == "__main__":
         gamma=0.5)
     LOG.info(f"Scheduler has been defined.")
 
-    criterion = PixFocalLoss()
+    criterion = PixWiseBCELoss()
     LOG.info(f"Criterion has been defined")
 
     dataset = LivenessDataModule(cfg)
