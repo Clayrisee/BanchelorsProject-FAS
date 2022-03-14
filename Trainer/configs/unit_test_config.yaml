@@ -1,4 +1,4 @@
-output_dir: 'model_checkpoint/'
+output_dir: "model_checkpoint/"
 device: 'cpu'
 dataset:
   root: 'unit_test_dataset/'
@@ -43,3 +43,8 @@ logger:
   api_key: ""
   workspace: ""
   project_name: ""
+
+custom_cb:
+  patience: 10
+  metric: 'acer'
+  mode: 'min'
