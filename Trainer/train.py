@@ -6,6 +6,7 @@ from trainer.FASTrainer import FASTrainer
 from utils.loss import PixFocalLoss, PixWiseBCELoss
 from utils.schedulers import CosineAnealingWithWarmUp
 from utils.logger import get_logger
+from utils.callbacks import CustomCallback
 import argparse
 
 
@@ -46,7 +47,14 @@ if __name__ == "__main__":
 
     dataset = LivenessDataModule(cfg)
     LOG.info(f"Dataset successfully loaded.")
-
-    trainer = FASTrainer(cfg, network, optimizer, criterion, dataset, device, lr_scheduler, logger=logger)
+    cb_config = dict(
+        checkpoint_path=cfg['output_dir'],
+        patience=cfg['custom_cb']['patience'],
+        metric=cfg['custom_cb']['metric'],
+        mode=cfg['custom_cb']['mode']
+    )
+    custom_cb = CustomCallback(**cb_config)
+    LOG.info(f"Custom CB Initialized")
+    trainer = FASTrainer(cfg, network, optimizer, criterion, dataset, device, callbacks=custom_cb, lr_scheduler=lr_scheduler, logger=logger)
 
     trainer.train()
