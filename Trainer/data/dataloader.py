@@ -35,7 +35,7 @@ class LivenessDataModule(DataModuleBase):
     def prepare_dataset(self, cfg):
 
         self.train_set = FASDataset(
-            root_dir=cfg['dataset']['root'],
+            root_dir=cfg['dataset']['train_root'],
             csv_file=cfg['dataset']['train_set'],
             map_size=cfg['model']['map_size'],
             transform=self.train_transforms,
@@ -43,7 +43,7 @@ class LivenessDataModule(DataModuleBase):
             )
 
         self.val_set = FASDataset(
-            root_dir=cfg['dataset']['root'],
+            root_dir=cfg['dataset']['val_root'],
             csv_file=cfg['dataset']['val_set'],
             map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
@@ -51,7 +51,7 @@ class LivenessDataModule(DataModuleBase):
             )
    
         self.test_set = FASDataset(
-            root_dir=cfg['dataset']['root'],
+            root_dir=cfg['dataset']['test_root'],
             csv_file=cfg['dataset']['test_set'],
             map_size=cfg['model']['map_size'],
             transform=self.test_val_transforms,
