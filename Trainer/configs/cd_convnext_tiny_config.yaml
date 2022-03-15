@@ -1,5 +1,3 @@
-output_dir: 'model_checkpoint/'
-device: '0'
 output_dir: "model_checkpoint/"
 device: 'cuda:0'
 dataset:
@@ -25,8 +23,8 @@ model:
   base: 'cd_convnext_tiny'
   pretrained: false
   input_size: [256,256]
-  map_size: [7,7]
   num_classes: 1
+  map_size: 8
 
 train:
   batch_size: 64
@@ -44,6 +42,11 @@ test:
   smoothing: True
 
 logger:
-  api_key: ""
-  workspace: ""
-  project_name: ""
+  api_key: "sISf602PGYRO5TJbcsUMCn5t2"
+  workspace: "clayrisee"
+  project_name: "cd_convnext_tiny"
+
+custom_cb:
+  patience: 15
+  metric: 'acer'
+  mode: 'min'
