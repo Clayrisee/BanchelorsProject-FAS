@@ -2,11 +2,11 @@
 from data.base import DataModuleBase
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from data.dataset import FASDataset
+from data.dataset import FASDataset, FASFolderDataset
 from utils.custom_transforms import RandomGammaCorrection
 
 class LivenessDataModule(DataModuleBase):
-    def __init__(self, cfg):
+    def __init__(self, cfg, use_csv=False):
         
         super().__init__(cfg)
 
@@ -30,33 +30,55 @@ class LivenessDataModule(DataModuleBase):
             transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['std'])
         ])
 
-        self.prepare_dataset(cfg=cfg)
+        self.prepare_dataset(cfg=cfg, use_csv=use_csv)
     
-    def prepare_dataset(self, cfg):
+    def prepare_dataset(self, cfg, use_csv:bool):
 
-        self.train_set = FASDataset(
-            root_dir=cfg['dataset']['train_root'],
-            csv_file=cfg['dataset']['train_set'],
-            map_size=cfg['model']['map_size'],
-            transform=self.train_transforms,
-            smoothing=cfg['train']['smoothing']
-            )
+        if use_csv:
+            self.train_set = FASDataset(
+                root_dir=cfg['dataset']['train_root'],
+                csv_file=cfg['dataset']['train_set'],
+                map_size=cfg['model']['map_size'],
+                transform=self.train_transforms,
+                smoothing=cfg['train']['smoothing']
+                )
 
-        self.val_set = FASDataset(
-            root_dir=cfg['dataset']['val_root'],
-            csv_file=cfg['dataset']['val_set'],
-            map_size=cfg['model']['map_size'],
-            transform=self.test_val_transforms,
-            smoothing=cfg['val']['smoothing']
+            self.val_set = FASDataset(
+                root_dir=cfg['dataset']['val_root'],
+                csv_file=cfg['dataset']['val_set'],
+                map_size=cfg['model']['map_size'],
+                transform=self.test_val_transforms,
+                smoothing=cfg['val']['smoothing']
+                )
+    
+            self.test_set = FASDataset(
+                root_dir=cfg['dataset']['test_root'],
+                csv_file=cfg['dataset']['test_set'],
+                map_size=cfg['model']['map_size'],
+                transform=self.test_val_transforms,
+                smoothing=cfg['test']['smoothing']
+                )
+        else:
+            self.train_set = FASFolderDataset(
+                root_dir=cfg['dataset']['train_root'],
+                map_size=cfg['model']['map_size'],
+                transform=self.test_val_transforms,
+                smoothing=cfg['test']['smoothing']
             )
-   
-        self.test_set = FASDataset(
-            root_dir=cfg['dataset']['test_root'],
-            csv_file=cfg['dataset']['test_set'],
-            map_size=cfg['model']['map_size'],
-            transform=self.test_val_transforms,
-            smoothing=cfg['test']['smoothing']
-            )
+            self.val_set = FASFolderDataset(
+                root_dir=cfg['dataset']['val_root'],
+                map_size=cfg['model']['map_size'],
+                transform=self.test_val_transforms,
+                smoothing=cfg['val']['smoothing']
+                )
+    
+            self.test_set = FASFolderDataset(
+                root_dir=cfg['dataset']['test_root'],
+                map_size=cfg['model']['map_size'],
+                transform=self.test_val_transforms,
+                smoothing=cfg['test']['smoothing']
+                )
+
 
     def train_dataloader(self):
         kwargs = dict(
