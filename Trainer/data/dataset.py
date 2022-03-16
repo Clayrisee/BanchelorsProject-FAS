@@ -4,6 +4,7 @@ from PIL import Image
 import pandas as pd
 from torch.utils.data import Dataset, DatasetFolder
 import os
+from data.check_type_image import is_image_file
 
 class FASDataset(Dataset):
     def __init__(self, root_dir, csv_file, map_size=7, transform=None, smoothing=True):
@@ -60,7 +61,10 @@ class FASFolderDataset(Dataset):
         classes= os.listdir(root_dir)
         for class_folder in classes:
             for img_path in os.listdir(os.path.join(root_dir, class_folder)):
-                img_paths.append(os.path.join(root_dir, class_folder, img_path))
+                if is_image_file(img_path):
+                    img_paths.append(os.path.join(root_dir, class_folder, img_path))
+                else:
+                    continue
         return img_paths, classes
 
     def class_to_idx(self, class_list):
