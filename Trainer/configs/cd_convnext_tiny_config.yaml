@@ -10,11 +10,12 @@ dataset:
     contrast: 0.5
     saturation: 0.5
     hue: 0.5
-  train_root: 'dataset/LCC_FASD/LCC_FASD_training/'
+  use_csv : False
+  train_root: 'dataset/LCC_clean_dataset/train_dataset'
   train_set: 'fasd_train.csv'
-  val_root: 'dataset/LCC_FASD/LCC_FASD_development/'
+  val_root: 'dataset/LCC_clean_dataset/val_dataset'
   val_set: 'fasd_dev.csv'
-  test_root: 'dataset/LCC_FASD/LCC_FASD_evaluation/'
+  test_root: 'dataset/LCC_clean_dataset/test_dataset'
   test_set: 'fasd_eval.csv'
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
