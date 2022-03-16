@@ -139,4 +139,4 @@ cython_debug/
 
 # Custom
 dataset/
-model_chekpoint/
+model_checkpoint/
